@@ -5,82 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArcherStudio | Portal</title>
     <link rel="icon" type="image/png" href="1.png">
+    
     <style>
-        /* Dark Theme Reset */
+        /* Clean Modern Layout */
         body, html { 
             margin: 0; 
             padding: 0; 
             height: 100%; 
             width: 100%; 
             overflow: hidden; 
-            background-color: #000000; /* Black background for the main page */
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #f4f7f9; /* Light, soft background */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Black Loading Screen */
         #loader { 
             position: fixed; 
             top: 0; left: 0; 
             width: 100%; height: 100%; 
-            background: #000000; /* ArcherStudio Black */
+            background: #f4f7f9; 
             display: flex; 
-            flex-direction: column; 
             justify-content: center; 
             align-items: center; 
             z-index: 9999; 
-            transition: opacity 0.6s ease-in-out;
+            transition: opacity 0.5s ease;
         }
 
-        /* Branding Styles */
-        #studioTitle {
-            color: #ffffff;
-            font-size: 1.5rem;
-            letter-spacing: 3px;
-            margin-bottom: 5px;
-            font-weight: bold;
-            text-transform: uppercase;
+        /* Loading Card */
+        .loader-card {
+            text-align: center;
+            background: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        #groupLogo {
-            width: 140px; 
+        /* ArcherStudio Main Logo */
+        #appLogo {
+            width: 80px; 
             height: auto;
-            margin-bottom: 25px;
-            border: 2px solid #333; /* Subtle border for the logo */
-            border-radius: 12px;
-            padding: 5px;
-            background: #0a0a0a;
+            margin-bottom: 20px;
         }
 
-        /* Modern Spinner */
-        .spinner { 
-            border: 4px solid rgba(255, 255, 255, 0.1); 
-            border-top: 4px solid #3498db; /* Archer Blue */
-            border-radius: 50%; 
-            width: 35px; 
-            height: 35px; 
-            animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite; 
-        }
-
-        #loadingText {
-            color: #888;
-            font-size: 0.85rem;
-            margin-top: 15px;
+        #studioTitle {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: 600;
             letter-spacing: 1px;
+            margin-bottom: 20px;
         }
 
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
+        /* Minimalist Line Spinner */
+        .loading-bar-container {
+            width: 150px;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loading-bar-progress {
+            width: 100%;
+            height: 100%;
+            background: #3498db;
+            position: absolute;
+            transform: translateX(-100%);
+            animation: loading 1.5s infinite ease-in-out;
+        }
+
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(0); }
+            100% { transform: translateX(100%); }
+        }
+
+        #statusText {
+            margin-top: 15px;
+            font-size: 0.75rem;
+            color: #95a5a6;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
         iframe { width: 100%; height: 100%; border: none; display: block; }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <div id="studioTitle">ArcherStudio</div>
-        <img id="groupLogo" src="1.png" alt="ArcherStudio Logo">
-        
-        <div class="spinner"></div>
-        <p id="loadingText">INITIALIZING SYSTEM...</p>
+        <div class="loader-card">
+            <img id="appLogo" src="1.png" alt="ArcherStudio">
+            <div id="studioTitle">ArcherStudio</div>
+            
+            <div class="loading-bar-container">
+                <div class="loading-bar-progress"></div>
+            </div>
+            
+            <p id="statusText">System Initializing</p>
+        </div>
     </div>
 
     <iframe id="appFrame" src="" onload="hideLoader()"></iframe>
@@ -91,20 +116,13 @@
         const queryString = window.location.search;
         
         const baseUrl = "https://script.google.com/macros/s/AKfycbzRYZY9bJmWswC7dQS319qmorEztdFUUFl0elmdqKPigkmeSAFpB9aYCizuLMNGevBH/exec";
-
-        const logoImg = document.getElementById('groupLogo');
         const frame = document.getElementById('appFrame');
-        const loadText = document.getElementById('loadingText');
+        const statusText = document.getElementById('statusText');
 
-        // Apply Group Customization
-        if (group) {
-            logoImg.src = group + ".png"; 
-            loadText.innerText = "ACCESSING GROUP " + group + "...";
-        }
-
-        // Load Apps Script
+        // Logic to pass URL variables
         if (queryString) {
             frame.src = baseUrl + queryString;
+            if (group) statusText.innerText = "Connecting Group " + group;
         } else {
             frame.src = baseUrl;
         }
@@ -114,8 +132,8 @@
             if(frame.src !== "") {
                 setTimeout(() => {
                     loader.style.opacity = "0";
-                    setTimeout(() => { loader.style.display = 'none'; }, 600);
-                }, 1000); // 1s pause so they see the cool black logo screen
+                    setTimeout(() => { loader.style.display = 'none'; }, 500);
+                }, 800); 
             }
         }
     </script>
