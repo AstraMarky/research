@@ -178,14 +178,24 @@
         }
         
         // 4. Generate 16-char Device Fingerprint
-const signals = navigator.userAgent + 
-                navigator.language + 
-                screen.colorDepth + 
-                window.screen.width + "x" + 
-                window.screen.height + 
-                (localStorage.getItem('archer_user') || 'guest'); // Added parentheses
+const ua = navigator.userAgent;
+    let deviceBrand = "Unknown Device";
+    
+    if (/android/i.test(ua)) deviceBrand = "Android Device";
+    else if (/iPad|iPhone|iPod/.test(ua)) deviceBrand = "Apple iOS";
+    else if (/Windows/i.test(ua)) deviceBrand = "Windows PC";
+    else if (/Macintosh/i.test(ua)) deviceBrand = "MacBook/iMac";
 
-const dfp = btoa(signals).substring(0, 16);
+    // The Mega-Signal Fingerprint (Higher entropy)
+    const signals = [
+        ua,
+        navigator.language,
+        screen.colorDepth,
+        window.screen.width + "x" + window.screen.height,
+        localStorage.getItem('archer_user') || 'guest'
+    ].join('|');
+
+    const dfp = btoa(signals).substring(0, 16);
         
         // 5. Build the iframe URL using the saved localStorage data + UID + DFP
 const queryArgs = new URLSearchParams({
