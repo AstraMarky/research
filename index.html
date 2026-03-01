@@ -177,24 +177,16 @@
             window.history.replaceState({}, document.title, cleanUrl);
         }
         
-        // 4. Generate or get 10-char Unique ID
-        let uid = localStorage.getItem('archer_uid');
-        if (!uid) {
-            uid = Math.random().toString(36).substring(2, 12).toUpperCase();
-            localStorage.setItem('archer_uid', uid);
-        }
-        
-        // 5. Generate 16-char Device Fingerprint
+        // 4. Generate 16-char Device Fingerprint
         const signals = navigator.userAgent + navigator.language + screen.colorDepth + window.screen.width + "x" + window.screen.height;
         const dfp = btoa(signals).substring(0, 16);
         
-        // 6. Build the iframe URL using the saved localStorage data + UID + DFP
+        // 5. Build the iframe URL using the saved localStorage data + UID + DFP
 const queryArgs = new URLSearchParams({
         code: localStorage.getItem('archer_code') || '',
         pin: localStorage.getItem('archer_pin') || '',
         group: localStorage.getItem('archer_group') || '',
         user: localStorage.getItem('archer_user') || '',
-        uid: uid,
         dfp: dfp
     }).toString();
 
