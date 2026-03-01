@@ -187,15 +187,20 @@ const ua = navigator.userAgent;
     else if (/Macintosh/i.test(ua)) deviceBrand = "MacBook/iMac";
 
     // The Mega-Signal Fingerprint (Higher entropy)
-    const signals = [
-        ua,
-        navigator.language,
-        screen.colorDepth,
-        window.screen.width + "x" + window.screen.height,
-        localStorage.getItem('archer_user') || 'guest'
-    ].join('|');
+// 1. Create a "Mixed" signal
+const rawSignal = [
+    navigator.userAgent,
+    screen.width + "x" + screen.height,
+    navigator.hardwareConcurrency, // Number of CPU cores
+    new Date().getTimezoneOffset(), // Unique to location
+    localStorage.getItem('archer_user') || 'guest'
+].join('|');
 
-    const dfp = btoa(signals).substring(0, 16);
+// 2. Encode it
+const fullHash = btoa(rawSignal);
+
+// 3. TAKE THE END OF THE STRING (where the unique hardware data sits)
+const dfp = fullHash.substring(fullHash.length - 16);
         
         // 5. Build the iframe URL using the saved localStorage data + UID + DFP
 const queryArgs = new URLSearchParams({
