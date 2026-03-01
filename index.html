@@ -147,24 +147,53 @@
     <iframe id="appFrame" src="" onload="hideLoader()"></iframe>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const group = urlParams.get('group');
-        const queryString = window.location.search;
-        
         const baseUrl = "https://script.google.com/macros/s/AKfycbzRYZY9bJmWswC7dQS319qmorEztdFUUFl0elmdqKPigkmeSAFpB9aYCizuLMNGevBH/exec";
         const frame = document.getElementById('appFrame');
-        const statusText = document.getElementById('statusText');
-
-        // Set Frame Source
-        if (queryString) {
-            frame.src = baseUrl + queryString;
-        } else {
-            frame.src = baseUrl;
+        
+        // 1. Grab URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // 2. Save params to localStorage if they exist in the link
+        ['code', 'pin', 'group', 'user'].forEach(key => {
+            if (urlParams.has(key)) {
+                localStorage.setItem(`archer_${key}`, urlParams.get(key));
+            }
+        });
+        
+        // 3. Clean the visible URL (remove the parameters from the address bar)
+        if (window.location.search) {
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
         }
-
+        
+        // 4. Generate or get 10-char Unique ID
+        let uid = localStorage.getItem('archer_uid');
+        if (!uid) {
+            uid = Math.random().toString(36).substring(2, 12).toUpperCase();
+            localStorage.setItem('archer_uid', uid);
+        }
+        
+        // 5. Generate 16-char Device Fingerprint
+        const signals = navigator.userAgent + navigator.language + screen.colorDepth + window.screen.width + "x" + window.screen.height;
+        const dfp = btoa(signals).substring(0, 16);
+        
+        // 6. Build the iframe URL using the saved localStorage data + UID + DFP
+        const queryArgs = new URLSearchParams({
+            code: localStorage.getItem('archer_code') || '',
+            pin: localStorage.getItem('archer_pin') || '',
+            group: localStorage.getItem('archer_group') || '',
+            user: localStorage.getItem('archer_user') || '',
+            uid: uid,
+            dfp: dfp
+        }).toString();
+        
+        // Set the iframe source
+        frame.src = `${baseUrl}?${queryArgs}`;
+        
+        // Hide loader when iframe finishes loading
         function hideLoader() {
             const loader = document.getElementById('loader');
-            if(frame.src !== "") {
+            if (frame.src !== "") {
                 setTimeout(() => {
                     loader.style.opacity = "0";
                     setTimeout(() => { loader.style.display = 'none'; }, 500);
