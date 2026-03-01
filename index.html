@@ -146,73 +146,77 @@
 
     <iframe id="appFrame" src=""></iframe>
 
-    <script>
-        
-        const baseUrl = "https://script.google.com/macros/s/AKfycbzRYZY9bJmWswC7dQS319qmorEztdFUUFl0elmdqKPigkmeSAFpB9aYCizuLMNGevBH/exec";
-        const frame = document.getElementById('appFrame');
-        
-        function hideLoader() {
+<script>
+    const baseUrl = "https://script.google.com/macros/s/AKfycbzRYZY9bJmWswC7dQS319qmorEztdFUUFl0elmdqKPigkmeSAFpB9aYCizuLMNGevBH/exec";
+    const frame = document.getElementById('appFrame');
+
+    function hideLoader() {
         const loader = document.getElementById('loader');
-        if (frame.src !== "") {
-            setTimeout(() => {
-                loader.style.opacity = "0";
-                setTimeout(() => { loader.style.display = 'none'; }, 500);
-            }, 1200);
-        }
+        setTimeout(() => {
+            loader.style.opacity = "0";
+            setTimeout(() => { loader.style.display = 'none'; }, 500);
+        }, 1200);
     }
     frame.onload = hideLoader;
-        // 1. Grab URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        // 2. Save params to localStorage if they exist in the link
-        ['code', 'pin', 'group', 'user'].forEach(key => {
-            if (urlParams.has(key)) {
-                localStorage.setItem(`archer_${key}`, urlParams.get(key));
-            }
-        });
-        
-        // 3. Clean the visible URL (remove the parameters from the address bar)
-        if (window.location.search) {
-            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-            window.history.replaceState({}, document.title, cleanUrl);
+
+    // 1. Storage Logic
+    const urlParams = new URLSearchParams(window.location.search);
+    ['code', 'pin', 'group', 'user'].forEach(key => {
+        if (urlParams.has(key)) {
+            localStorage.setItem(`archer_${key}`, urlParams.get(key));
         }
-        
-        // 4. Generate 16-char Device Fingerprint
-const ua = navigator.userAgent;
-    let deviceBrand = "Unknown Device";
-    
-    if (/android/i.test(ua)) deviceBrand = "Android Device";
-    else if (/iPad|iPhone|iPod/.test(ua)) deviceBrand = "Apple iOS";
-    else if (/Windows/i.test(ua)) deviceBrand = "Windows PC";
-    else if (/Macintosh/i.test(ua)) deviceBrand = "MacBook/iMac";
+    });
 
-    // The Mega-Signal Fingerprint (Higher entropy)
-// 1. Create a "Mixed" signal
-const rawSignal = [
-    navigator.userAgent,
-    screen.width + "x" + screen.height,
-    navigator.hardwareConcurrency, // Number of CPU cores
-    new Date().getTimezoneOffset(), // Unique to location
-    localStorage.getItem('archer_user') || 'guest'
-].join('|');
+    if (window.location.search) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 
-// 2. Encode it
-const fullHash = btoa(rawSignal);
+    // 2. GENERATE UNIQUE CANVAS SIGNAL (The "Hardware Soul")
+    function getCanvasFingerprint() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 200; canvas.height = 50;
+        ctx.textBaseline = "top";
+        ctx.font = "14px 'Arial'";
+        ctx.fillStyle = "#f60"; ctx.fillRect(125,1,62,20);
+        ctx.fillStyle = "#069"; ctx.fillText("ArcherStudio-Auth", 2, 15);
+        ctx.fillStyle = "rgba(102, 204, 0, 0.7)"; ctx.fillText("ArcherStudio-Auth", 4, 17);
+        return canvas.toDataURL(); // This is unique to the GPU/Drivers
+    }
 
-// 3. TAKE THE END OF THE STRING (where the unique hardware data sits)
-const dfp = fullHash.substring(fullHash.length - 16);
-        
-        // 5. Build the iframe URL using the saved localStorage data + UID + DFP
-const queryArgs = new URLSearchParams({
+    // 3. Build Mega-Signal
+    const canvasSignal = getCanvasFingerprint();
+    const rawSignal = [
+        navigator.userAgent,
+        screen.width + "x" + screen.height,
+        navigator.hardwareConcurrency || 0,
+        new Date().getTimezoneOffset(),
+        canvasSignal, // GPU uniqueness
+        localStorage.getItem('archer_user') || 'guest'
+    ].join('|');
+
+    // 4. Encode and Slice from the MIDDLE 
+    // (The middle contains the unique Canvas data)
+    const fullHash = btoa(rawSignal);
+    const midPoint = Math.floor(fullHash.length / 2);
+    const dfp = fullHash.substring(midPoint, midPoint + 16);
+
+    // 5. Detect Device Name for your logs
+    let devName = "Windows PC";
+    if (/android/i.test(navigator.userAgent)) devName = "Android Device";
+    else if (/iPad|iPhone|iPod/.test(navigator.userAgent)) devName = "Apple iOS";
+
+    // 6. Build final URL
+    const queryArgs = new URLSearchParams({
         code: localStorage.getItem('archer_code') || '',
         pin: localStorage.getItem('archer_pin') || '',
         group: localStorage.getItem('archer_group') || '',
         user: localStorage.getItem('archer_user') || '',
-        dfp: dfp
+        dfp: dfp,
+        devName: devName
     }).toString();
 
     frame.src = `${baseUrl}?${queryArgs}`;
-    
-    </script>
+</script>
 </body>
 </html>
