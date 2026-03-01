@@ -178,7 +178,7 @@
         }
         
         // 4. Generate 16-char Device Fingerprint
-        const signals = navigator.userAgent + navigator.language + screen.colorDepth + window.screen.width + "x" + window.screen.height;
+        const signals = navigator.userAgent + navigator.language + screen.colorDepth + window.screen.width + "x" + window.screen.height + localStorage.getItem('archer_user') || '';
         const dfp = btoa(signals).substring(0, 16);
         
         // 5. Build the iframe URL using the saved localStorage data + UID + DFP
