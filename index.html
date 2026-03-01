@@ -159,19 +159,23 @@
     }
     frame.onload = hideLoader;
 
-    // 1. Storage Logic
+    // 1. Get current URL params
     const urlParams = new URLSearchParams(window.location.search);
+    const currentAction = urlParams.get('action') || ''; // CATCH THE ACTION (approve/sendRequest)
+
+    // 2. Storage Logic
     ['code', 'pin', 'group', 'user'].forEach(key => {
         if (urlParams.has(key)) {
             localStorage.setItem(`archer_${key}`, urlParams.get(key));
         }
     });
 
-    if (window.location.search) {
+    // Only clear the URL if there isn't an important action happening
+    if (window.location.search && !currentAction) {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    // 2. GENERATE UNIQUE CANVAS SIGNAL (The "Hardware Soul")
+    // 3. GENERATE UNIQUE CANVAS SIGNAL
     function getCanvasFingerprint() {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -180,43 +184,33 @@
         ctx.font = "14px 'Arial'";
         ctx.fillStyle = "#f60"; ctx.fillRect(125,1,62,20);
         ctx.fillStyle = "#069"; ctx.fillText("ArcherStudio-Auth", 2, 15);
-        ctx.fillStyle = "rgba(102, 204, 0, 0.7)"; ctx.fillText("ArcherStudio-Auth", 4, 17);
-        return canvas.toDataURL(); // This is unique to the GPU/Drivers
+        return canvas.toDataURL();
     }
 
-    // 3. Build Mega-Signal
     const canvasSignal = getCanvasFingerprint();
     const rawSignal = [
         navigator.userAgent,
         screen.width + "x" + screen.height,
-        navigator.hardwareConcurrency || 0,
-        new Date().getTimezoneOffset(),
-        canvasSignal, // GPU uniqueness
+        canvasSignal,
         localStorage.getItem('archer_user') || 'guest'
     ].join('|');
 
-    // 4. Encode and Slice from the MIDDLE 
-    // (The middle contains the unique Canvas data)
+    // 4. Create DFP
     const fullHash = btoa(rawSignal);
     const midPoint = Math.floor(fullHash.length / 2);
     const dfp = fullHash.substring(midPoint, midPoint + 16);
 
-    // 5. Detect Device Name for your logs
-    let devName = "Windows PC";
-    if (/android/i.test(navigator.userAgent)) devName = "Android Device";
-    else if (/iPad|iPhone|iPod/.test(navigator.userAgent)) devName = "Apple iOS";
-
-    // 6. Build final URL
-    const queryArgs = new URLSearchParams({
+    // 5. Build final URL including the ACTION
+    const finalParams = new URLSearchParams({
         code: localStorage.getItem('archer_code') || '',
         pin: localStorage.getItem('archer_pin') || '',
         group: localStorage.getItem('archer_group') || '',
         user: localStorage.getItem('archer_user') || '',
         dfp: dfp,
-        devName: devName
-    }).toString();
+        action: currentAction // THIS WAS MISSING
+    });
 
-    frame.src = `${baseUrl}?${queryArgs}`;
+    frame.src = `${baseUrl}?${finalParams.toString()}`;
 </script>
 </body>
 </html>
