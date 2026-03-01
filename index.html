@@ -144,12 +144,25 @@
         </div>
     </div>
 
-    <iframe id="appFrame" src="" onload="hideLoader()"></iframe>
+    <iframe id="appFrame" src=""></iframe>
 
     <script>
+        
         const baseUrl = "https://script.google.com/macros/s/AKfycbzRYZY9bJmWswC7dQS319qmorEztdFUUFl0elmdqKPigkmeSAFpB9aYCizuLMNGevBH/exec";
         const frame = document.getElementById('appFrame');
         
+        function hideLoader() {
+        const loader = document.getElementById('loader');
+        const frame = document.getElementById('appFrame');
+        if (frame.src !== "") {
+            setTimeout(() => {
+                loader.style.opacity = "0";
+                setTimeout(() => { loader.style.display = 'none'; }, 500);
+            }, 1200);
+        }
+    }
+        const frame = document.getElementById('appFrame');
+    frame.onload = hideLoader;
         // 1. Grab URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         
@@ -178,28 +191,17 @@
         const dfp = btoa(signals).substring(0, 16);
         
         // 6. Build the iframe URL using the saved localStorage data + UID + DFP
-        const queryArgs = new URLSearchParams({
-            code: localStorage.getItem('archer_code') || '',
-            pin: localStorage.getItem('archer_pin') || '',
-            group: localStorage.getItem('archer_group') || '',
-            user: localStorage.getItem('archer_user') || '',
-            uid: uid,
-            dfp: dfp
-        }).toString();
-        
-        // Set the iframe source
-        frame.src = `${baseUrl}?${queryArgs}`;
-        
-        // Hide loader when iframe finishes loading
-        function hideLoader() {
-            const loader = document.getElementById('loader');
-            if (frame.src !== "") {
-                setTimeout(() => {
-                    loader.style.opacity = "0";
-                    setTimeout(() => { loader.style.display = 'none'; }, 500);
-                }, 1200);
-            }
-        }
+const queryArgs = new URLSearchParams({
+        code: localStorage.getItem('archer_code') || '',
+        pin: localStorage.getItem('archer_pin') || '',
+        group: localStorage.getItem('archer_group') || '',
+        user: localStorage.getItem('archer_user') || '',
+        uid: uid,
+        dfp: dfp
+    }).toString();
+
+    frame.src = `${baseUrl}?${queryArgs}`;
+    
     </script>
 </body>
 </html>
