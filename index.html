@@ -153,7 +153,6 @@
         
         function hideLoader() {
         const loader = document.getElementById('loader');
-        const frame = document.getElementById('appFrame');
         if (frame.src !== "") {
             setTimeout(() => {
                 loader.style.opacity = "0";
@@ -161,7 +160,6 @@
             }, 1200);
         }
     }
-        const frame = document.getElementById('appFrame');
     frame.onload = hideLoader;
         // 1. Grab URL parameters
         const urlParams = new URLSearchParams(window.location.search);
